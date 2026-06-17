@@ -30,7 +30,6 @@ class ApiService {
         return handler.next(options);
       },
       onError: (DioException e, handler) {
-        // Centralized logging or error transformation could happen here
         return handler.next(e);
       },
     ));
@@ -45,13 +44,15 @@ class ApiService {
     required String email,
     required String password,
     required String workerId,
-    required String name
+    required String name,
+    String? role,
   }) async {
     final response = await _dio.post('/auth/signup', data: {
       'email': email,
       'password': password,
       'workerId': workerId,
-      'name': name
+      'name': name,
+      'role': role ?? 'user',
     });
     return response.data;
   }
@@ -62,6 +63,30 @@ class ApiService {
 
   Future<Map<String, dynamic>> getMetrics() async {
     final response = await _dio.get('/wellness/metrics');
+    return response.data;
+  }
+
+  Future<void> syncWearableData({
+    required int heartRate,
+    required double sleepHours,
+    required int steps,
+  }) async {
+    await _dio.post('/wellness/wearable', data: {
+      'heartRate': heartRate,
+      'sleepHours': sleepHours,
+      'steps': steps,
+    });
+  }
+
+  Future<void> sendAnonymousMessage(String content, {String? category}) async {
+    await _dio.post('/messages/anonymous', data: {
+      'content': content,
+      'category': category ?? 'general',
+    });
+  }
+
+  Future<List<dynamic>> getAdminMessages() async {
+    final response = await _dio.get('/admin/messages');
     return response.data;
   }
 

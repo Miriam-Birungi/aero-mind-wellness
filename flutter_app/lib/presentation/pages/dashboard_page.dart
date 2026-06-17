@@ -32,6 +32,10 @@ class _DashboardPageState extends State<DashboardPage> {
         foregroundColor: Colors.white,
         actions: [
           IconButton(
+            onPressed: () => context.push('/chat'),
+            icon: const Icon(LucideIcons.messageSquare)
+          ),
+          IconButton(
             onPressed: () => context.read<WellnessBloc>().add(WellnessMetricsRequested()),
             icon: const Icon(LucideIcons.refreshCcw)
           ),
@@ -41,20 +45,31 @@ class _DashboardPageState extends State<DashboardPage> {
         child: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             String name = 'Pilot';
-            if (state is AuthAuthenticated) name = state.user.name;
+            bool isAdmin = false;
+            if (state is AuthAuthenticated) {
+              name = state.user.name;
+              isAdmin = state.user.role == 'admin';
+            }
 
             return Column(
               children: [
                 UserAccountsDrawerHeader(
                   decoration: const BoxDecoration(color: Color(0xFF2563EB)),
                   accountName: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  accountEmail: const Text('Verified Professional'),
+                  accountEmail: Text(isAdmin ? 'Wellness Administrator' : 'Verified Professional'),
                   currentAccountPicture: const CircleAvatar(backgroundColor: Colors.white, child: Icon(LucideIcons.user, color: Color(0xFF2563EB))),
                 ),
                 ListTile(leading: const Icon(LucideIcons.home), title: const Text('Dashboard'), onTap: () => Navigator.pop(context)),
+                if (isAdmin)
+                  ListTile(
+                    leading: const Icon(LucideIcons.shield, color: Colors.orange),
+                    title: const Text('Admin: Reports'),
+                    onTap: () { Navigator.pop(context); context.push('/admin/messages'); },
+                  ),
+                ListTile(leading: const Icon(LucideIcons.messageSquare), title: const Text('Anonymous Support'), onTap: () { Navigator.pop(context); context.push('/chat'); }),
                 ListTile(leading: const Icon(LucideIcons.bookOpen), title: const Text('Resources'), onTap: () { Navigator.pop(context); context.push('/resources'); }),
                 ListTile(leading: const Icon(LucideIcons.wind), title: const Text('Breathing'), onTap: () { Navigator.pop(context); context.push('/breathing'); }),
-            ListTile(leading: const Icon(LucideIcons.settings), title: const Text('Settings'), onTap: () { Navigator.pop(context); context.push('/settings'); }),
+                ListTile(leading: const Icon(LucideIcons.settings), title: const Text('Settings'), onTap: () { Navigator.pop(context); context.push('/settings'); }),
                 const Spacer(),
                 const Divider(),
                 ListTile(

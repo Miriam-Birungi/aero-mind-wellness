@@ -1,3 +1,30 @@
 {
-  "users": []
+  "users": [
+    {
+      "id": 1781710155232,
+      "email": "pilot@example.com",
+      "password": "$2b$10$0AMo0b/Cn.l5osyHONenSOfGkCF/9VeqE7CQMoad80VMZF9LKRUrW",
+      "workerId": "P123",
+      "name": "Test Pilot",
+      "role": "admin"
+    }
+  ],
+  "wearableData": {
+    "1781710155232": [
+      {
+        "timestamp": "2026-06-17T15:29:15.250Z",
+        "heartRate": 72,
+        "sleepHours": 7.5,
+        "steps": 8500
+      }
+    ]
+  },
+  "messages": [
+    {
+      "id": 1781710155262,
+      "category": "stress",
+      "content": "I am feeling a bit stressed today due to long hours.",
+      "timestamp": "2026-06-17T15:29:15.262Z"
+    }
+  ]
 }

@@ -16,6 +16,7 @@ class _SignupPageState extends State<SignupPage> {
   final _passwordController = TextEditingController();
   final _workerIdController = TextEditingController();
   final _nameController = TextEditingController();
+  String _role = 'user';
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +46,16 @@ class _SignupPageState extends State<SignupPage> {
                   TextField(controller: _passwordController, obscureText: true, decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder())),
                   const SizedBox(height: 16),
                   TextField(controller: _workerIdController, decoration: const InputDecoration(labelText: 'Worker ID', border: OutlineInputBorder())),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: _role,
+                    decoration: const InputDecoration(labelText: 'Role', border: OutlineInputBorder()),
+                    items: const [
+                      DropdownMenuItem(value: 'user', child: Text('Pilot')),
+                      DropdownMenuItem(value: 'admin', child: Text('Wellness Admin')),
+                    ],
+                    onChanged: (val) => setState(() => _role = val!),
+                  ),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
@@ -70,7 +81,8 @@ class _SignupPageState extends State<SignupPage> {
                             _emailController.text,
                             _passwordController.text,
                             _workerIdController.text,
-                            _nameController.text
+                            _nameController.text,
+                            role: _role,
                           )),
                       style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                       child: state is AuthLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('Complete Signup'),

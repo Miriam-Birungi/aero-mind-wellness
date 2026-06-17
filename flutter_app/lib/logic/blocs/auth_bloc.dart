@@ -16,7 +16,8 @@ class AuthSignupRequested extends AuthEvent {
   final String password;
   final String workerId;
   final String name;
-  AuthSignupRequested(this.email, this.password, this.workerId, this.name);
+  final String? role;
+  AuthSignupRequested(this.email, this.password, this.workerId, this.name, {this.role});
 }
 class AuthLogoutRequested extends AuthEvent {}
 
@@ -64,7 +65,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthSignupRequested>((event, emit) async {
       emit(AuthLoading());
       try {
-        final user = await authRepository.signup(event.email, event.password, event.workerId, event.name);
+        final user = await authRepository.signup(
+          event.email,
+          event.password,
+          event.workerId,
+          event.name,
+          role: event.role
+        );
         emit(AuthAuthenticated(user));
       } on DioException catch (e) {
         final msg = e.response?.data?['error'] ?? 'Signup failed. Please try again.';

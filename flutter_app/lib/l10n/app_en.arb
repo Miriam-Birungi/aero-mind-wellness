@@ -1,0 +1,11 @@
+{
+  "appTitle": "AeroMind",
+  "dashboard": "Dashboard",
+  "wellnessScore": "Wellness Score",
+  "heartRate": "Heart Rate",
+  "sleep": "Sleep",
+  "steps": "Steps",
+  "resources": "Resources",
+  "settings": "Settings",
+  "logout": "Logout"
+}

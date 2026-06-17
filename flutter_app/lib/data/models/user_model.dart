@@ -6,6 +6,7 @@ class UserModel extends User {
     required super.email,
     required super.name,
     required super.workerId,
+    required super.role,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -14,6 +15,7 @@ class UserModel extends User {
       email: json['email'],
       name: json['name'],
       workerId: json['workerId'],
+      role: json['role'] ?? 'user',
     );
   }
 
@@ -23,6 +25,7 @@ class UserModel extends User {
       'email': email,
       'name': name,
       'workerId': workerId,
+      'role': role,
     };
   }
 }

@@ -21,12 +21,13 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<User> signup(String email, String password, String workerId, String name) async {
+  Future<User> signup(String email, String password, String workerId, String name, {String? role}) async {
     final data = await apiService.signup(
       email: email,
       password: password,
       workerId: workerId,
-      name: name
+      name: name,
+      role: role
     );
     final user = UserModel.fromJson(data['user']);
     await prefs.setString('auth_token', data['token']);

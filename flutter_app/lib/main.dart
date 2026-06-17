@@ -5,10 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:aero_mind_wellness/data/repositories/api_service.dart';
+import 'package:aero_mind_wellness/data/repositories/supabase_api_service.dart';
 import 'package:aero_mind_wellness/data/repositories/auth_repository_impl.dart';
-import 'package:aero_mind_wellness/logic/blocs/auth_bloc.dart';
+import 'package:aero_mind_wellness/logic/blocs/auth_bloc.dart' as app_auth;
 import 'package:aero_mind_wellness/logic/blocs/wellness_bloc.dart';
 import 'package:aero_mind_wellness/presentation/pages/signup_page.dart';
 import 'package:aero_mind_wellness/presentation/pages/onboarding_page.dart';
@@ -21,14 +22,20 @@ import 'package:aero_mind_wellness/presentation/pages/admin_messages_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'https://your-project-url.supabase.co',
+    anonKey: 'your-anon-key',
+  );
+
   final prefs = await SharedPreferences.getInstance();
-  final apiService = ApiService();
+  final apiService = SupabaseApiService();
   final authRepository = AuthRepositoryImpl(apiService: apiService, prefs: prefs);
 
   runApp(
     MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => AuthBloc(authRepository: authRepository)..add(AuthCheckRequested())),
+        BlocProvider(create: (context) => app_auth.AuthBloc(authRepository: authRepository)..add(app_auth.AuthCheckRequested())),
         BlocProvider(create: (context) => WellnessBloc(apiService: apiService)),
       ],
       child: const AeroMindApp(),
@@ -41,11 +48,11 @@ class AeroMindApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
+    return BlocListener<app_auth.AuthBloc, app_auth.AuthState>(
       listener: (context, state) {
-        if (state is AuthAuthenticated) {
+        if (state is app_auth.AuthAuthenticated) {
           _router.go('/dashboard');
-        } else if (state is AuthUnauthenticated) {
+        } else if (state is app_auth.AuthUnauthenticated) {
           _router.go('/');
         }
       },
@@ -180,9 +187,9 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(backgroundColor: Colors.transparent),
-      body: BlocConsumer<AuthBloc, AuthState>(
+      body: BlocConsumer<app_auth.AuthBloc, app_auth.AuthState>(
         listener: (context, state) {
-          if (state is AuthError) {
+          if (state is app_auth.AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
@@ -202,11 +209,11 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: state is AuthLoading
+                    onPressed: state is app_auth.AuthLoading
                         ? null
-                        : () => context.read<AuthBloc>().add(AuthLoginRequested(_emailController.text, _passwordController.text)),
+                        : () => context.read<app_auth.AuthBloc>().add(app_auth.AuthLoginRequested(_emailController.text, _passwordController.text)),
                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2563EB), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                    child: state is AuthLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('Login'),
+                    child: state is app_auth.AuthLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('Login'),
                   ),
                 ),
               ],

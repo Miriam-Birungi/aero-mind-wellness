@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/repositories/api_service.dart';
+import '../../data/repositories/supabase_api_service.dart';
 
 // Events
 abstract class WellnessEvent {}
@@ -20,7 +20,7 @@ class WellnessError extends WellnessState {
 
 // BLoC
 class WellnessBloc extends Bloc<WellnessEvent, WellnessState> {
-  final ApiService apiService;
+  final SupabaseApiService apiService;
 
   WellnessBloc({required this.apiService}) : super(WellnessInitial()) {
     on<WellnessMetricsRequested>((event, emit) async {

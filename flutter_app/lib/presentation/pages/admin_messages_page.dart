@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:aero_mind_wellness/data/repositories/api_service.dart';
+import 'package:aero_mind_wellness/data/repositories/supabase_api_service.dart';
 import 'package:intl/intl.dart';
 
 class AdminMessagesPage extends StatefulWidget {
@@ -12,7 +12,7 @@ class AdminMessagesPage extends StatefulWidget {
 }
 
 class _AdminMessagesPageState extends State<AdminMessagesPage> {
-  final _apiService = ApiService();
+  final _apiService = SupabaseApiService();
   List<dynamic> _messages = [];
   bool _isLoading = true;
 
@@ -76,7 +76,7 @@ class _AdminMessagesPageState extends State<AdminMessagesPage> {
       itemCount: _messages.length,
       itemBuilder: (context, index) {
         final msg = _messages[index];
-        final date = DateTime.parse(msg['timestamp']);
+        final date = DateTime.parse(msg['created_at']);
         final formattedDate = DateFormat('MMM d, HH:mm').format(date);
 
         return Card(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:aero_mind_wellness/data/repositories/api_service.dart';
+import 'package:aero_mind_wellness/data/repositories/supabase_api_service.dart';
 
 class AnonymousChatPage extends StatefulWidget {
   const AnonymousChatPage({super.key});
@@ -12,7 +12,7 @@ class AnonymousChatPage extends StatefulWidget {
 
 class _AnonymousChatPageState extends State<AnonymousChatPage> {
   final _messageController = TextEditingController();
-  final _apiService = ApiService();
+  final _apiService = SupabaseApiService();
   bool _isSending = false;
 
   void _sendMessage() async {

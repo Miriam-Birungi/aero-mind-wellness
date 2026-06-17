@@ -2,18 +2,17 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { WearableProvider } from "@/contexts/WearableContext";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { WearableProvider } from "./contexts/WearableContext";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
-import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import Onboarding from "./pages/Onboarding";
-import WearableSetup from "./pages/WearableSetup";
-import Settings from "./pages/Settings";
 import Resources from "./pages/Resources";
-// import Resources from "./pages/Resources";
- import Login from "./pages/Login";
- import Signup from "./pages/Signup";
+import Settings from "./pages/Settings";
+import WearableSetup from "./pages/WearableSetup";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -29,12 +28,12 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/wearable-setup" element={<WearableSetup />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/resources" element={<Resources />} />
             <Route path="/dashboard" element={<Index />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
+            <Route path="/wearable-setup" element={<WearableSetup />} />
+            <Route path="/resources" element={<Resources />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/404" element={<NotFound />} />
+            <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>
         </BrowserRouter>
       </WearableProvider>

@@ -29,38 +29,17 @@ export const MoodCheckIn = ({ onMoodSubmit }: MoodCheckInProps) => {
 
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold text-foreground mb-4">How are you feeling today?</h3>
-      
+      <h3 className="text-lg font-semibold mb-4">How are you feeling today?</h3>
       <div className="space-y-6">
         <div className="text-center">
-          <div className="text-6xl mb-2 transition-all duration-300">{getMoodEmoji(mood)}</div>
-          <p className="text-sm text-muted-foreground">
-            {mood <= 3 ? "Stressed" : mood <= 6 ? "Okay" : "Great"}
-          </p>
+          <div className="text-6xl mb-2">{getMoodEmoji(mood)}</div>
+          <p className="text-sm text-muted-foreground">{mood <= 3 ? "Stressed" : mood <= 6 ? "Okay" : "Great"}</p>
         </div>
-
         <div className="px-2">
-          <Slider
-            value={[mood]}
-            onValueChange={([value]) => setMood(value)}
-            max={10}
-            min={1}
-            step={1}
-            className="w-full"
-          />
-          <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-            <span>Very Stressed</span>
-            <span>Excellent</span>
-          </div>
+          <Slider value={[mood]} onValueChange={([v]) => setMood(v)} max={10} min={1} step={1} />
+          <div className="flex justify-between mt-2 text-xs text-muted-foreground"><span>Stressed</span><span>Excellent</span></div>
         </div>
-
-        <Button 
-          onClick={handleSubmit} 
-          className="w-full"
-          disabled={submitted}
-        >
-          {submitted ? "Mood Recorded ✓" : "Submit Mood Check-in"}
-        </Button>
+        <Button onClick={handleSubmit} className="w-full" disabled={submitted}>{submitted ? "Recorded ✓" : "Submit Check-in"}</Button>
       </div>
     </Card>
   );

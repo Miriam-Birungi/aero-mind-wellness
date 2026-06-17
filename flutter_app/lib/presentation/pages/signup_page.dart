@@ -11,7 +11,6 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
-  int _step = 1;
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _workerIdController = TextEditingController();
@@ -38,58 +37,41 @@ class _SignupPageState extends State<SignupPage> {
                 const SizedBox(height: 24),
                 Text('Pilot Signup', style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 32),
-                if (_step == 1) ...[
-                  TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'Full Name', border: OutlineInputBorder())),
-                  const SizedBox(height: 16),
-                  TextField(controller: _emailController, decoration: const InputDecoration(labelText: 'Company Email', border: OutlineInputBorder())),
-                  const SizedBox(height: 16),
-                  TextField(controller: _passwordController, obscureText: true, decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder())),
-                  const SizedBox(height: 16),
-                  TextField(controller: _workerIdController, decoration: const InputDecoration(labelText: 'Worker ID', border: OutlineInputBorder())),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    value: _role,
-                    decoration: const InputDecoration(labelText: 'Role', border: OutlineInputBorder()),
-                    items: const [
-                      DropdownMenuItem(value: 'user', child: Text('Pilot')),
-                      DropdownMenuItem(value: 'admin', child: Text('Wellness Admin')),
-                    ],
-                    onChanged: (val) => setState(() => _role = val!),
+                TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'Full Name', border: OutlineInputBorder())),
+                const SizedBox(height: 16),
+                TextField(controller: _emailController, decoration: const InputDecoration(labelText: 'Company Email', border: OutlineInputBorder())),
+                const SizedBox(height: 16),
+                TextField(controller: _passwordController, obscureText: true, decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder())),
+                const SizedBox(height: 16),
+                TextField(controller: _workerIdController, decoration: const InputDecoration(labelText: 'Worker ID', border: OutlineInputBorder())),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: _role,
+                  decoration: const InputDecoration(labelText: 'Role', border: OutlineInputBorder()),
+                  items: const [
+                    DropdownMenuItem(value: 'user', child: Text('Pilot')),
+                    DropdownMenuItem(value: 'admin', child: Text('Wellness Admin')),
+                  ],
+                  onChanged: (val) => setState(() => _role = val!),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: state is AuthLoading
+                      ? null
+                      : () => context.read<AuthBloc>().add(AuthSignupRequested(
+                          _emailController.text,
+                          _passwordController.text,
+                          _workerIdController.text,
+                          _nameController.text,
+                          role: _role,
+                        )),
+                    style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                    child: state is AuthLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('Complete Signup'),
                   ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: () => setState(() => _step = 2),
-                      style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                      child: const Text('Continue'),
-                    ),
-                  ),
-                ] else ...[
-                  Text('Verification', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 32),
-                  const Text('For this demo, any password will be hashed and stored securely.', textAlign: TextAlign.center),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: state is AuthLoading
-                        ? null
-                        : () => context.read<AuthBloc>().add(AuthSignupRequested(
-                            _emailController.text,
-                            _passwordController.text,
-                            _workerIdController.text,
-                            _nameController.text,
-                            role: _role,
-                          )),
-                      style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                      child: state is AuthLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('Complete Signup'),
-                    ),
-                  ),
-                  TextButton(onPressed: () => setState(() => _step = 1), child: const Text('Back')),
-                ],
+                ),
               ],
             ),
           );

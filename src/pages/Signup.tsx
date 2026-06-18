@@ -4,6 +4,13 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -15,6 +22,7 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [workerId, setWorkerId] = useState("");
+  const [role, setRole] = useState("user");
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -28,6 +36,7 @@ const Signup = () => {
         data: {
           name,
           worker_id: workerId,
+          role: role,
         }
       }
     });
@@ -43,7 +52,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 text-left">
       <Card className="w-full max-w-md p-8">
         <div className="text-center space-y-6">
           <div className="inline-flex items-center gap-3">
@@ -63,6 +72,16 @@ const Signup = () => {
             <div className="space-y-2">
               <Label htmlFor="workerId">Worker ID</Label>
               <Input id="workerId" placeholder="ABC123" value={workerId} onChange={(e) => setWorkerId(e.target.value.toUpperCase())} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              <Select value={role} onValueChange={setRole}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">Pilot</SelectItem>
+                  <SelectItem value="admin">Wellness Admin</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>

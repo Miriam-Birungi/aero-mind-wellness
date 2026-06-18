@@ -12,6 +12,7 @@ import Onboarding from "./pages/Onboarding";
 import Resources from "./pages/Resources";
 import Settings from "./pages/Settings";
 import WearableSetup from "./pages/WearableSetup";
+import AdminReports from "./pages/AdminReports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/wearable-setup" element={<WearableSetup />} />
             <Route path="/resources" element={<Resources />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/admin/reports" element={<AdminReports />} />
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>

@@ -7,5 +7,10 @@
   "steps": "Steps",
   "resources": "Resources",
   "settings": "Settings",
-  "logout": "Logout"
+  "logout": "Logout",
+  "anonymousSupport": "Anonymous Support",
+  "adminReports": "Admin: Reports",
+  "breathing": "Breathing",
+  "retry": "Retry",
+  "offlineMode": "Offline Mode - Using Cached Data"
 }

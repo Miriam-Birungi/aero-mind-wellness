@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Home, 
@@ -13,7 +13,8 @@ import {
   Moon,
   Footprints,
   BookOpen,
-  LogOut
+  LogOut,
+  Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -29,8 +30,20 @@ interface SidebarProps {
 
 export const Sidebar = ({ userName, wearableConnected, wellnessScore, profilePhoto }: SidebarProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const checkRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+        if (data?.role === 'admin') setIsAdmin(true);
+      }
+    };
+    checkRole();
+  }, []);
 
   const getWellnessStatus = () => {
     if (wellnessScore > 70) return { text: "Healthy", color: "bg-green-500" };
@@ -55,7 +68,7 @@ export const Sidebar = ({ userName, wearableConnected, wellnessScore, profilePho
       {isOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setIsOpen(false)} />}
 
       <div className={`fixed left-0 top-0 h-full w-80 bg-card border-r border-border z-50 transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full text-left">
           <div className="p-6 border-b border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -69,14 +82,14 @@ export const Sidebar = ({ userName, wearableConnected, wellnessScore, profilePho
             </div>
           </div>
 
-          <div className="p-6 border-b border-border text-left">
+          <div className="p-6 border-b border-border">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
                 {profilePhoto ? <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" /> : <User className="w-6 h-6 text-primary" />}
               </div>
               <div>
                 <p className="font-medium">{userName}</p>
-                <p className="text-sm text-muted-foreground">Pilot</p>
+                <p className="text-sm text-muted-foreground">{isAdmin ? 'Wellness Admin' : 'Pilot'}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -86,13 +99,14 @@ export const Sidebar = ({ userName, wearableConnected, wellnessScore, profilePho
           </div>
 
           <div className="flex-1 p-4 space-y-2">
-            <Button variant={location.pathname === "/dashboard" ? "secondary" : "ghost"} className="w-full justify-start text-left" onClick={() => navigate("/dashboard")}><Home className="w-4 h-4 mr-3" /> Dashboard</Button>
-            <Button variant={location.pathname === "/resources" ? "secondary" : "ghost"} className="w-full justify-start text-left" onClick={() => navigate("/resources")}><BookOpen className="w-4 h-4 mr-3" /> Resources</Button>
-            <Button variant={location.pathname === "/settings" ? "secondary" : "ghost"} className="w-full justify-start text-left" onClick={() => navigate("/settings")}><Settings className="w-4 h-4 mr-3" /> Settings</Button>
+            <Button variant={location.pathname === "/dashboard" ? "secondary" : "ghost"} className="w-full justify-start" onClick={() => navigate("/dashboard")}><Home className="w-4 h-4 mr-3" /> Dashboard</Button>
+            {isAdmin && <Button variant={location.pathname === "/admin/reports" ? "secondary" : "ghost"} className="w-full justify-start text-orange-600" onClick={() => navigate("/admin/reports")}><Shield className="w-4 h-4 mr-3" /> Admin Reports</Button>}
+            <Button variant={location.pathname === "/resources" ? "secondary" : "ghost"} className="w-full justify-start" onClick={() => navigate("/resources")}><BookOpen className="w-4 h-4 mr-3" /> Resources</Button>
+            <Button variant={location.pathname === "/settings" ? "secondary" : "ghost"} className="w-full justify-start" onClick={() => navigate("/settings")}><Settings className="w-4 h-4 mr-3" /> Settings</Button>
           </div>
 
           <div className="p-4 border-t border-border">
-            <Card className="p-4 text-left">
+            <Card className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2"><Watch className="w-4 h-4 text-muted-foreground" /><span className="text-sm font-medium">Wearable</span></div>
                 <Badge variant={wearableConnected ? "default" : "secondary"}>{wearableConnected ? "Connected" : "Disconnected"}</Badge>

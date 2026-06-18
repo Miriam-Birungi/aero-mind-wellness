@@ -6,6 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:aero_mind_wellness/data/repositories/supabase_api_service.dart';
 import 'package:aero_mind_wellness/data/repositories/auth_repository_impl.dart';
@@ -23,9 +25,17 @@ import 'package:aero_mind_wellness/presentation/pages/admin_messages_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  try {
+    await dotenv.load(fileName: "assets/.env");
+  } catch (e) {
+    debugPrint('Warning: .env file not found');
+  }
+
+  await Hive.initFlutter();
+
   await Supabase.initialize(
-    url: 'https://your-project-url.supabase.co',
-    anonKey: 'your-anon-key',
+    url: dotenv.env['SUPABASE_URL'] ?? 'https://placeholder.supabase.co',
+    anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? 'placeholder',
   );
 
   final prefs = await SharedPreferences.getInstance();

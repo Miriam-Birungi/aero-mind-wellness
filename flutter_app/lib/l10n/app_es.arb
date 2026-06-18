@@ -7,5 +7,10 @@
   "steps": "Pasos",
   "resources": "Recursos",
   "settings": "Ajustes",
-  "logout": "Cerrar Sesión"
+  "logout": "Cerrar Sesión",
+  "anonymousSupport": "Soporte Anónimo",
+  "adminReports": "Admin: Informes",
+  "breathing": "Respiración",
+  "retry": "Reintentar",
+  "offlineMode": "Modo Desconectado - Usando Datos Guardados"
 }

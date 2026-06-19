@@ -9,6 +9,7 @@ import '../../logic/blocs/wellness_bloc.dart';
 import '../widgets/mood_check_in.dart';
 import '../widgets/ai_insights.dart';
 import '../widgets/connectivity_banner.dart';
+import '../../data/repositories/report_service.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -17,6 +18,8 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
+  final ReportService _reportService = ReportService();
+
   @override
   void initState() {
     super.initState();
@@ -37,7 +40,7 @@ class _DashboardPageState extends State<DashboardPage> {
             icon: const Icon(LucideIcons.messageSquare)
           ),
           IconButton(
-            onPressed: () => context.read<WellnessBloc>().add(WellnessMetricsRequested()),
+            onPressed: () => context.read<WellnessBloc>().add(WellnessSyncRequested()),
             icon: const Icon(LucideIcons.refreshCcw)
           ),
         ],
@@ -112,6 +115,8 @@ class _DashboardPageState extends State<DashboardPage> {
                       children: [
                         _buildWellnessScore(context, data['score']),
                         const SizedBox(height: 16),
+                        _buildActionRow(data),
+                        const SizedBox(height: 16),
                         MoodCheckIn(onMoodSubmit: (mood) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Mood recorded: $mood')));
                         }),
@@ -131,6 +136,29 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildActionRow(Map<String, dynamic> data) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () => _reportService.generateAndPrintReport(data),
+            icon: const Icon(LucideIcons.fileText, size: 16),
+            label: const Text('Weekly Report'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.black87),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () => context.push('/breathing'),
+            icon: const Icon(LucideIcons.wind, size: 16),
+            label: const Text('Guided Recovery'),
+          ),
+        ),
+      ],
     );
   }
 

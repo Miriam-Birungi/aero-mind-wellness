@@ -14,7 +14,8 @@ import {
   Footprints,
   BookOpen,
   LogOut,
-  Shield
+  Shield,
+  MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -45,16 +46,17 @@ export const Sidebar = ({ userName, wearableConnected, wellnessScore, profilePho
     checkRole();
   }, []);
 
-  const getWellnessStatus = () => {
-    if (wellnessScore > 70) return { text: "Healthy", color: "bg-green-500" };
-    if (wellnessScore >= 40) return { text: "Stressed", color: "bg-orange-500" };
-    return { text: "Critical", color: "bg-red-500" };
-  };
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     localStorage.clear();
     navigate("/login");
+  };
+
+  const getWellnessStatus = () => {
+    if (wellnessScore === 0) return { text: "No Data", color: "bg-gray-400" };
+    if (wellnessScore > 70) return { text: "Healthy", color: "bg-green-500" };
+    if (wellnessScore >= 40) return { text: "Stressed", color: "bg-orange-500" };
+    return { text: "Critical", color: "bg-red-500" };
   };
 
   const status = getWellnessStatus();
@@ -94,19 +96,20 @@ export const Sidebar = ({ userName, wearableConnected, wellnessScore, profilePho
             </div>
             <div className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${status.color}`} />
-              <span className="text-sm font-medium">{status.text} ({wellnessScore}/100)</span>
+              <span className="text-sm font-medium">{status.text} {wellnessScore > 0 ? `(${wellnessScore}/100)` : ''}</span>
             </div>
           </div>
 
           <div className="flex-1 p-4 space-y-2">
             <Button variant={location.pathname === "/dashboard" ? "secondary" : "ghost"} className="w-full justify-start" onClick={() => navigate("/dashboard")}><Home className="w-4 h-4 mr-3" /> Dashboard</Button>
-            {isAdmin && <Button variant={location.pathname === "/admin/reports" ? "secondary" : "ghost"} className="w-full justify-start text-orange-600" onClick={() => navigate("/admin/reports")}><Shield className="w-4 h-4 mr-3" /> Admin Reports</Button>}
+            <Button variant={location.pathname === "/anonymous-support" ? "secondary" : "ghost"} className="w-full justify-start" onClick={() => navigate("/anonymous-support")}><MessageSquare className="w-4 h-4 mr-3" /> Anonymous Support</Button>
+            {isAdmin && <Button variant={location.pathname === "/admin/reports" ? "secondary" : "ghost"} className="w-full justify-start text-orange-600" onClick={() => navigate("/admin/reports")}><Shield className="w-4 h-4 mr-3" /> Admin Analytics</Button>}
             <Button variant={location.pathname === "/resources" ? "secondary" : "ghost"} className="w-full justify-start" onClick={() => navigate("/resources")}><BookOpen className="w-4 h-4 mr-3" /> Resources</Button>
             <Button variant={location.pathname === "/settings" ? "secondary" : "ghost"} className="w-full justify-start" onClick={() => navigate("/settings")}><Settings className="w-4 h-4 mr-3" /> Settings</Button>
           </div>
 
           <div className="p-4 border-t border-border">
-            <Card className="p-4">
+            <Card className="p-4 text-left">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2"><Watch className="w-4 h-4 text-muted-foreground" /><span className="text-sm font-medium">Wearable</span></div>
                 <Badge variant={wearableConnected ? "default" : "secondary"}>{wearableConnected ? "Connected" : "Disconnected"}</Badge>
@@ -122,7 +125,7 @@ export const Sidebar = ({ userName, wearableConnected, wellnessScore, profilePho
           </div>
 
           <div className="p-4 border-t border-border space-y-2">
-            <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => alert("Contacting...")}><Phone className="w-4 h-4 mr-2" /> Contact Medical</Button>
+            <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => alert("Connecting to aviation medical examiner...")}><Phone className="w-4 h-4 mr-2" /> Contact Medical</Button>
             <Button variant="destructive" size="sm" className="w-full justify-start" onClick={handleLogout}><LogOut className="w-4 h-4 mr-2" /> Logout</Button>
           </div>
         </div>

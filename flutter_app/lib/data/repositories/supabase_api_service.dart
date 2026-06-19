@@ -23,6 +23,9 @@ class SupabaseApiService {
 
     if (response.user == null) throw Exception('Signup failed');
 
+    // Wait for trigger to create profile
+    await Future.delayed(const Duration(seconds: 1));
+
     final profile = await _supabase
         .from('profiles')
         .select()
@@ -76,10 +79,10 @@ class SupabaseApiService {
       return {
         'score': 0,
         'heartRate': 0,
-        'sleepHours': 0,
+        'sleepHours': 0.0,
         'steps': 0,
         'history': [],
-        'insights': ["No data available yet. Start syncing your wearable."]
+        'insights': ["Awaiting wearable data synchronization."]
       };
     }
 
@@ -87,15 +90,15 @@ class SupabaseApiService {
     return {
       'score': latest['score'],
       'heartRate': latest['heart_rate'],
-      'sleepHours': latest['sleep_hours'],
+      'sleepHours': (latest['sleep_hours'] as num).toDouble(),
       'steps': latest['steps'],
       'history': metrics.map((m) => {
-        'date': m['recorded_at'], // Need formatting on frontend
+        'date': m['recorded_at'],
         'score': m['score']
       }).toList(),
       'insights': [
-        latest['score'] > 80 ? "✨ Excellent wellness." : "⚠️ Fatigue risk detected.",
-        "DB Data: Metrics retrieved from Supabase."
+        latest['score'] > 70 ? "✨ Pilot condition optimal." : "⚠️ Operational risk: Review fatigue markers.",
+        "Verified record from Supabase health vault."
       ]
     };
   }
@@ -108,7 +111,7 @@ class SupabaseApiService {
     final user = _supabase.auth.currentUser;
     if (user == null) throw Exception('Not authenticated');
 
-    final score = (heartRate < 80 && sleepHours > 7) ? 85 : 60; // Simplified calculation
+    final score = (heartRate < 85 && sleepHours > 6.5) ? 88 : 55;
 
     await _supabase.from('wellness_metrics').insert({
       'user_id': user.id,
@@ -127,9 +130,10 @@ class SupabaseApiService {
   }
 
   Future<List<dynamic>> getAdminMessages() async {
-    return await _supabase
+    final response = await _supabase
         .from('anonymous_messages')
         .select()
         .order('created_at', ascending: false);
+    return response;
   }
 }

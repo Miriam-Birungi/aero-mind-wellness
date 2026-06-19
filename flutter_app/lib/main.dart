@@ -11,6 +11,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:aero_mind_wellness/data/repositories/supabase_api_service.dart';
 import 'package:aero_mind_wellness/data/repositories/auth_repository_impl.dart';
+import 'package:aero_mind_wellness/data/repositories/notification_service.dart';
 import 'package:aero_mind_wellness/logic/blocs/auth_bloc.dart' as app_auth;
 import 'package:aero_mind_wellness/logic/blocs/wellness_bloc.dart';
 import 'package:aero_mind_wellness/presentation/pages/signup_page.dart';
@@ -32,6 +33,10 @@ void main() async {
   }
 
   await Hive.initFlutter();
+
+  final notificationService = NotificationService();
+  await notificationService.init();
+  await notificationService.scheduleDailyReminder();
 
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL'] ?? 'https://placeholder.supabase.co',

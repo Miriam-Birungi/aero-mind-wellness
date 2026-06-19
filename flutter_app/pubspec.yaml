@@ -1,5 +1,5 @@
 name: aero_mind_wellness
-description: "A new Flutter project."
+description: "AeroMind Wellness Production App."
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -27,6 +27,15 @@ dependencies:
   path_provider: ^2.1.3
   connectivity_plus: ^6.1.3
   flutter_dotenv: ^5.2.1
+  health: ^11.0.0
+  permission_handler: ^11.3.1
+  flutter_local_notifications: ^17.2.2
+  timezone: ^0.9.0
+  pdf: ^3.11.1
+  printing: ^5.13.2
+
+dependency_overrides:
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

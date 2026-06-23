@@ -4,9 +4,15 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:aero_mind_wellness/data/repositories/api_service.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'package:aero_mind_wellness/data/repositories/supabase_api_service.dart';
 import 'package:aero_mind_wellness/data/repositories/auth_repository_impl.dart';
-import 'package:aero_mind_wellness/logic/blocs/auth_bloc.dart';
+import 'package:aero_mind_wellness/data/repositories/notification_service.dart';
+import 'package:aero_mind_wellness/logic/blocs/auth_bloc.dart' as app_auth;
 import 'package:aero_mind_wellness/logic/blocs/wellness_bloc.dart';
 import 'package:aero_mind_wellness/presentation/pages/signup_page.dart';
 import 'package:aero_mind_wellness/presentation/pages/onboarding_page.dart';
@@ -14,19 +20,37 @@ import 'package:aero_mind_wellness/presentation/pages/dashboard_page.dart';
 import 'package:aero_mind_wellness/presentation/pages/breathing_page.dart';
 import 'package:aero_mind_wellness/presentation/pages/resources_page.dart';
 import 'package:aero_mind_wellness/presentation/pages/settings_page.dart';
-
-// ignore_for_file: deprecated_member_use
+import 'package:aero_mind_wellness/presentation/pages/anonymous_chat_page.dart';
+import 'package:aero_mind_wellness/presentation/pages/admin_messages_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    await dotenv.load(fileName: "assets/.env");
+  } catch (e) {
+    debugPrint('Warning: .env file not found');
+  }
+
+  await Hive.initFlutter();
+
+  final notificationService = NotificationService();
+  await notificationService.init();
+  await notificationService.scheduleDailyReminder();
+
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL'] ?? 'https://placeholder.supabase.co',
+    anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? 'placeholder',
+  );
+
   final prefs = await SharedPreferences.getInstance();
-  final apiService = ApiService();
+  final apiService = SupabaseApiService();
   final authRepository = AuthRepositoryImpl(apiService: apiService, prefs: prefs);
 
   runApp(
     MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => AuthBloc(authRepository: authRepository)..add(AuthCheckRequested())),
+        BlocProvider(create: (context) => app_auth.AuthBloc(authRepository: authRepository)..add(app_auth.AuthCheckRequested())),
         BlocProvider(create: (context) => WellnessBloc(apiService: apiService)),
       ],
       child: const AeroMindApp(),
@@ -39,17 +63,26 @@ class AeroMindApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
+    return BlocListener<app_auth.AuthBloc, app_auth.AuthState>(
       listener: (context, state) {
-        if (state is AuthAuthenticated) {
+        if (state is app_auth.AuthAuthenticated) {
           _router.go('/dashboard');
-        } else if (state is AuthUnauthenticated) {
+        } else if (state is app_auth.AuthUnauthenticated) {
           _router.go('/');
         }
       },
       child: MaterialApp.router(
         title: 'AeroMind Wellness',
         debugShowCheckedModeBanner: false,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en'),
+          Locale('es'),
+        ],
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
             seedColor: const Color(0xFF2563EB),
@@ -77,6 +110,8 @@ final _router = GoRouter(
     GoRoute(path: '/breathing', builder: (context, state) => const BreathingExercisePage()),
     GoRoute(path: '/resources', builder: (context, state) => const ResourcesPage()),
     GoRoute(path: '/settings', builder: (context, state) => const SettingsPage()),
+    GoRoute(path: '/chat', builder: (context, state) => const AnonymousChatPage()),
+    GoRoute(path: '/admin/messages', builder: (context, state) => const AdminMessagesPage()),
   ],
 );
 
@@ -108,7 +143,7 @@ class LandingPage extends StatelessWidget {
                         color: Colors.blue.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Icon(LucideIcons.planeTakeoff, color: const Color(0xFF2563EB)),
+                      child: const Icon(LucideIcons.planeTakeoff, color: Color(0xFF2563EB)),
                     ),
                     const SizedBox(width: 12),
                     Column(
@@ -131,7 +166,7 @@ class LandingPage extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () => context.push('/signup'),
                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2563EB), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                    child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [const Text('Get Started'), const SizedBox(width: 8), Icon(LucideIcons.arrowRight, size: 18)]),
+                    child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Text('Get Started'), SizedBox(width: 8), Icon(LucideIcons.arrowRight, size: 18)]),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -167,9 +202,9 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(backgroundColor: Colors.transparent),
-      body: BlocConsumer<AuthBloc, AuthState>(
+      body: BlocConsumer<app_auth.AuthBloc, app_auth.AuthState>(
         listener: (context, state) {
-          if (state is AuthError) {
+          if (state is app_auth.AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
@@ -179,7 +214,7 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(LucideIcons.plane, size: 48, color: const Color(0xFF2563EB)),
+                const Icon(LucideIcons.plane, size: 48, color: Color(0xFF2563EB)),
                 const SizedBox(height: 32),
                 TextField(controller: _emailController, decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder())),
                 const SizedBox(height: 16),
@@ -189,11 +224,11 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: state is AuthLoading
+                    onPressed: state is app_auth.AuthLoading
                         ? null
-                        : () => context.read<AuthBloc>().add(AuthLoginRequested(_emailController.text, _passwordController.text)),
+                        : () => context.read<app_auth.AuthBloc>().add(app_auth.AuthLoginRequested(_emailController.text, _passwordController.text)),
                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2563EB), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                    child: state is AuthLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('Login'),
+                    child: state is app_auth.AuthLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('Login'),
                   ),
                 ),
               ],

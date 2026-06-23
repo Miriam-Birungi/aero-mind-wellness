@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AlertCircle, CheckCircle, AlertTriangle, X } from "lucide-react";
+import { AlertCircle, CheckCircle, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -12,16 +12,19 @@ export const AlertBanner = ({ score }: AlertBannerProps) => {
   const [showEmergencyDialog, setShowEmergencyDialog] = useState(false);
 
   useEffect(() => {
-    if (score < 40) {
+    if (score > 0 && score < 40) {
       setShowEmergencyDialog(true);
     }
   }, [score]);
+
+  if (score === 0) return null;
+
   if (score > 70) {
     return (
-      <Alert className="border-success bg-success/10">
-        <CheckCircle className="h-5 w-5 text-success" />
-        <AlertDescription className="text-success ml-2 font-medium">
-          <strong>✅ You are fit to fly.</strong> Your wellness metrics indicate you're in excellent condition.
+      <Alert className="border-green-500 bg-green-50">
+        <CheckCircle className="h-5 w-5 text-green-600" />
+        <AlertDescription className="text-green-700 ml-2 font-medium text-left">
+          <strong>✅ You are fit to fly.</strong> Your wellness metrics are excellent.
         </AlertDescription>
       </Alert>
     );
@@ -29,10 +32,10 @@ export const AlertBanner = ({ score }: AlertBannerProps) => {
 
   if (score >= 40) {
     return (
-      <Alert className="border-warning bg-warning/10">
-        <AlertTriangle className="h-5 w-5 text-warning" />
-        <AlertDescription className="text-warning ml-2 font-medium">
-          <strong>⚠️ You may be fatigued.</strong> Consider taking a rest before your next flight.
+      <Alert className="border-orange-500 bg-orange-50">
+        <AlertTriangle className="h-5 w-5 text-orange-600" />
+        <AlertDescription className="text-orange-700 ml-2 font-medium text-left">
+          <strong>⚠️ You may be fatigued.</strong> Consider resting before your next flight.
         </AlertDescription>
       </Alert>
     );
@@ -40,55 +43,32 @@ export const AlertBanner = ({ score }: AlertBannerProps) => {
 
   return (
     <>
-      <Alert className="border-critical bg-critical/10">
-        <AlertCircle className="h-5 w-5 text-critical" />
-        <AlertDescription className="text-critical ml-2 font-medium">
-          <strong>❌ Pilot may be unfit for flight.</strong> Please consult with a medical professional immediately.
+      <Alert className="border-red-500 bg-red-50">
+        <AlertCircle className="h-5 w-5 text-red-600" />
+        <AlertDescription className="text-red-700 ml-2 font-medium text-left">
+          <strong>❌ Pilot may be unfit for flight.</strong> Please consult medical immediately.
         </AlertDescription>
       </Alert>
 
       <Dialog open={showEmergencyDialog} onOpenChange={setShowEmergencyDialog}>
-        <DialogContent className="border-critical">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-critical">
+        <DialogContent className="border-red-500">
+          <DialogHeader className="text-left">
+            <DialogTitle className="flex items-center gap-2 text-red-600">
               <AlertCircle className="w-6 h-6" />
-              Emergency Alert: Critical Wellness Level
+              Critical Wellness Level
             </DialogTitle>
-            <DialogDescription>
-              Your wellness score has dropped to a critical level ({score}/100).
-            </DialogDescription>
+            <DialogDescription>Your wellness score is critical ({score}/100).</DialogDescription>
           </DialogHeader>
-          
-          <div className="space-y-4">
-            <div className="bg-critical/10 border border-critical/20 rounded-lg p-4">
-              <h4 className="font-semibold text-foreground mb-2">Immediate Actions Required:</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>🚫 <strong>Do not operate aircraft</strong> - You are not cleared for duty</li>
-                <li>🏥 Contact your aviation medical examiner immediately</li>
-                <li>📞 Inform your flight operations manager</li>
-                <li>😴 Get immediate rest in a safe environment</li>
+          <div className="space-y-4 text-left">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-800">
+              <h4 className="font-bold mb-2">Immediate Actions:</h4>
+              <ul className="list-disc ml-4 space-y-1">
+                <li>Do not operate aircraft.</li>
+                <li>Contact aviation medical examiner.</li>
+                <li>Inform flight operations.</li>
               </ul>
             </div>
-
-            <div className="flex gap-3">
-              <Button 
-                variant="outline" 
-                className="flex-1"
-                onClick={() => setShowEmergencyDialog(false)}
-              >
-                I Understand
-              </Button>
-              <Button 
-                className="flex-1 bg-critical hover:bg-critical/90"
-                onClick={() => {
-                  // In a real app, this would contact emergency services
-                  alert("Emergency services contacted. Help is on the way.");
-                  setShowEmergencyDialog(false);
-                }}
-              >
-                Contact Support
-              </Button>
-            </div>
+            <Button className="w-full bg-red-600 hover:bg-red-700" onClick={() => setShowEmergencyDialog(false)}>I Understand</Button>
           </div>
         </DialogContent>
       </Dialog>

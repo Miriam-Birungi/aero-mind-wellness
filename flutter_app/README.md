@@ -1,17 +1,22 @@
-# aero_mind_wellness
+# AeroMind Wellness - Flutter App
 
-A new Flutter project.
+Mobile application for AeroMind Wellness platform.
 
-## Getting Started
+## Features
+- Supabase Integration (Auth & DB)
+- Offline Support (Hive Caching)
+- Role-based Access (Pilot & Admin)
+- Localization (English & Spanish)
+- Real-time Connectivity Monitoring
 
-This project is a starting point for a Flutter application.
+## Setup
+1. Copy `assets/.env.example` to `assets/.env` and add your Supabase credentials.
+2. Run `flutter pub get`.
+3. Run `flutter run`.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Architecture
+This project follows Clean Architecture principles:
+- **Data**: Supabase API Service, Hive Caching.
+- **Domain**: Entities and Repository Interfaces.
+- **Logic**: BLoC for state management.
+- **Presentation**: Flutter Widgets and Pages.

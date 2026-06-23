@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../data/repositories/api_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -24,13 +24,20 @@ class _OnboardingPageState extends State<OnboardingPage> {
     } else {
       setState(() => _isSaving = true);
       try {
+        final user = Supabase.instance.client.auth.currentUser;
+        if (user == null) return;
+
         final data = {
           'airline': _airlineController.text,
           'role': _role,
           'compliance': _compliance,
         };
 
-        await ApiService().saveOnboarding(data);
+        await Supabase.instance.client.from('onboarding_data').upsert({
+          'user_id': user.id,
+          'data': data,
+          'completed_at': DateTime.now().toIso8601String(),
+        });
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('onboarded', true);
@@ -87,7 +94,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               ),
               Step(
                 title: const Text('Ready to Start'),
-                content: const Text('Your profile is almost ready. We will use this data to tailor your wellness insights.'),
+                content: const Text('Your profile is almost ready. We will use this data to tailor your wellness insights via Supabase.'),
                 isActive: _currentStep >= 2,
               ),
             ],

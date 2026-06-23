@@ -1,0 +1,16 @@
+{
+  "appTitle": "AeroMind",
+  "dashboard": "Dashboard",
+  "wellnessScore": "Wellness Score",
+  "heartRate": "Heart Rate",
+  "sleep": "Sleep",
+  "steps": "Steps",
+  "resources": "Resources",
+  "settings": "Settings",
+  "logout": "Logout",
+  "anonymousSupport": "Anonymous Support",
+  "adminReports": "Admin: Reports",
+  "breathing": "Breathing",
+  "retry": "Retry",
+  "offlineMode": "Offline Mode - Using Cached Data"
+}

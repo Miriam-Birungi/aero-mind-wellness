@@ -1,0 +1,16 @@
+{
+  "appTitle": "AeroMind",
+  "dashboard": "Panel",
+  "wellnessScore": "Puntuación de Bienestar",
+  "heartRate": "Ritmo Cardíaco",
+  "sleep": "Sueño",
+  "steps": "Pasos",
+  "resources": "Recursos",
+  "settings": "Ajustes",
+  "logout": "Cerrar Sesión",
+  "anonymousSupport": "Soporte Anónimo",
+  "adminReports": "Admin: Informes",
+  "breathing": "Respiración",
+  "retry": "Reintentar",
+  "offlineMode": "Modo Desconectado - Usando Datos Guardados"
+}

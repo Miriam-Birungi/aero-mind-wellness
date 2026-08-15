@@ -136,4 +136,16 @@ class SupabaseApiService {
         .order('created_at', ascending: false);
     return response;
   }
+
+  Future<List<dynamic>> getActiveAlerts() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return [];
+    final response = await _supabase
+        .from('active_alerts')
+        .select()
+        .eq('user_id', user.id)
+        .order('created_at', ascending: false)
+        .limit(3);
+    return response;
+  }
 }

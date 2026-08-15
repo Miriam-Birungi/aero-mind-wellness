@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:aero_mind_wellness/logic/blocs/auth_bloc.dart' as app_auth;
+import 'package:aero_mind_wellness/domain/entities/user.dart';
 import '../widgets/video_consultation.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -45,7 +46,7 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileCard(user) {
+  Widget _buildProfileCard(User user) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),

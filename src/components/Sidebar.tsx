@@ -63,7 +63,13 @@ export const Sidebar = ({ userName, wearableConnected, wellnessScore, profilePho
 
   return (
     <>
-      <Button variant="ghost" size="sm" className="lg:hidden fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm" onClick={() => setIsOpen(true)}>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="lg:hidden fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-sm"
+        onClick={() => setIsOpen(true)}
+        aria-label="Open sidebar"
+      >
         <Menu className="w-5 h-5" />
       </Button>
 
@@ -80,7 +86,15 @@ export const Sidebar = ({ userName, wearableConnected, wellnessScore, profilePho
                   <p className="text-sm text-muted-foreground">Pilot Wellness</p>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" className="lg:hidden" onClick={() => setIsOpen(false)}><X className="w-4 h-4" /></Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="lg:hidden"
+                onClick={() => setIsOpen(false)}
+                aria-label="Close sidebar"
+              >
+                <X className="w-4 h-4" />
+              </Button>
             </div>
           </div>
 

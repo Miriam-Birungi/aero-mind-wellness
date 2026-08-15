@@ -4,51 +4,109 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
+import { supabase } from "@/lib/supabase";
+
+interface Alert {
+  id: number | string;
+  rule_triggered: string;
+  message: string;
+  severity: string;
+}
+
 interface AlertBannerProps {
   score: number;
 }
 
 export const AlertBanner = ({ score }: AlertBannerProps) => {
   const [showEmergencyDialog, setShowEmergencyDialog] = useState(false);
+  const [activeAlerts, setActiveAlerts] = useState<Alert[]>([]);
 
   useEffect(() => {
     if (score > 0 && score < 40) {
       setShowEmergencyDialog(true);
     }
+
+    const fetchAlerts = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('active_alerts')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      if (!error && data) {
+        setActiveAlerts(data);
+      }
+    };
+
+    fetchAlerts();
   }, [score]);
 
   if (score === 0) return null;
 
   if (score > 70) {
     return (
-      <Alert className="border-green-500 bg-green-50">
-        <CheckCircle className="h-5 w-5 text-green-600" />
-        <AlertDescription className="text-green-700 ml-2 font-medium text-left">
-          <strong>✅ You are fit to fly.</strong> Your wellness metrics are excellent.
-        </AlertDescription>
-      </Alert>
+      <div className="space-y-3">
+        <Alert className="border-green-500 bg-green-50">
+          <CheckCircle className="h-5 w-5 text-green-600" />
+          <AlertDescription className="text-green-700 ml-2 font-medium text-left">
+            <strong>✅ You are fit to fly.</strong> Your wellness metrics are excellent.
+          </AlertDescription>
+        </Alert>
+        {activeAlerts.map((alert) => (
+          <Alert key={alert.id} className="border-yellow-500 bg-yellow-50">
+            <AlertTriangle className="h-5 w-5 text-yellow-600" />
+            <AlertDescription className="text-yellow-700 ml-2 font-medium text-left">
+              <strong>Compliance Risk ({alert.rule_triggered}):</strong> {alert.message}
+            </AlertDescription>
+          </Alert>
+        ))}
+      </div>
     );
   }
 
   if (score >= 40) {
     return (
-      <Alert className="border-orange-500 bg-orange-50">
-        <AlertTriangle className="h-5 w-5 text-orange-600" />
-        <AlertDescription className="text-orange-700 ml-2 font-medium text-left">
-          <strong>⚠️ You may be fatigued.</strong> Consider resting before your next flight.
-        </AlertDescription>
-      </Alert>
+      <div className="space-y-3">
+        <Alert className="border-orange-500 bg-orange-50">
+          <AlertTriangle className="h-5 w-5 text-orange-600" />
+          <AlertDescription className="text-orange-700 ml-2 font-medium text-left">
+            <strong>⚠️ You may be fatigued.</strong> Consider resting before your next flight.
+          </AlertDescription>
+        </Alert>
+        {activeAlerts.map((alert) => (
+          <Alert key={alert.id} className="border-yellow-500 bg-yellow-50">
+            <AlertTriangle className="h-5 w-5 text-yellow-600" />
+            <AlertDescription className="text-yellow-700 ml-2 font-medium text-left">
+              <strong>Compliance Risk ({alert.rule_triggered}):</strong> {alert.message}
+            </AlertDescription>
+          </Alert>
+        ))}
+      </div>
     );
   }
 
   return (
     <>
-      <Alert className="border-red-500 bg-red-50">
-        <AlertCircle className="h-5 w-5 text-red-600" />
-        <AlertDescription className="text-red-700 ml-2 font-medium text-left">
-          <strong>❌ Pilot may be unfit for flight.</strong> Please consult medical immediately.
-        </AlertDescription>
-      </Alert>
+      <div className="space-y-3">
+        <Alert className="border-red-500 bg-red-50">
+          <AlertCircle className="h-5 w-5 text-red-600" />
+          <AlertDescription className="text-red-700 ml-2 font-medium text-left">
+            <strong>❌ Pilot may be unfit for flight.</strong> Please consult medical immediately.
+          </AlertDescription>
+        </Alert>
+        {activeAlerts.map((alert) => (
+          <Alert key={alert.id} className="border-red-500 bg-red-50">
+            <AlertCircle className="h-5 w-5 text-red-600" />
+            <AlertDescription className="text-red-700 ml-2 font-medium text-left">
+              <strong>Compliance Alarm ({alert.rule_triggered}):</strong> {alert.message}
+            </AlertDescription>
+          </Alert>
+        ))}
+      </div>
 
       <Dialog open={showEmergencyDialog} onOpenChange={setShowEmergencyDialog}>
         <DialogContent className="border-red-500">

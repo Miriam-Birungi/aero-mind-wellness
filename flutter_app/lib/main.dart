@@ -40,7 +40,7 @@ void main() async {
 
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL'] ?? 'https://placeholder.supabase.co',
-    anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? 'placeholder',
+    publishableKey: dotenv.env['SUPABASE_ANON_KEY'] ?? 'placeholder',
   );
 
   final prefs = await SharedPreferences.getInstance();
@@ -140,7 +140,7 @@ class LandingPage extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.15),
+                        color: Colors.blue.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(LucideIcons.planeTakeoff, color: Color(0xFF2563EB)),

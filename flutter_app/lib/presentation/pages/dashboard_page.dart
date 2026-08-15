@@ -10,6 +10,7 @@ import '../widgets/mood_check_in.dart';
 import '../widgets/ai_insights.dart';
 import '../widgets/connectivity_banner.dart';
 import '../../data/repositories/report_service.dart';
+import '../../data/repositories/supabase_api_service.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -19,11 +20,27 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   final ReportService _reportService = ReportService();
+  final SupabaseApiService _apiService = SupabaseApiService();
+  List<dynamic> _activeAlerts = [];
 
   @override
   void initState() {
     super.initState();
     context.read<WellnessBloc>().add(WellnessMetricsRequested());
+    _fetchAlerts();
+  }
+
+  Future<void> _fetchAlerts() async {
+    try {
+      final alerts = await _apiService.getActiveAlerts();
+      if (mounted) {
+        setState(() {
+          _activeAlerts = alerts;
+        });
+      }
+    } catch (e) {
+      debugPrint("Failed to fetch active alerts: $e");
+    }
   }
 
   @override
@@ -87,54 +104,69 @@ class _DashboardPageState extends State<DashboardPage> {
           },
         ),
       ),
-      body: Column(
-        children: [
-          const ConnectivityBanner(),
-          Expanded(
-            child: BlocBuilder<WellnessBloc, WellnessState>(
-              builder: (context, state) {
-                if (state is WellnessLoading) return const Center(child: CircularProgressIndicator());
-                if (state is WellnessError) return Center(child: Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(LucideIcons.alertCircle, size: 48, color: Colors.red),
-                      const SizedBox(height: 16),
-                      Text(state.message, textAlign: TextAlign.center),
-                      const SizedBox(height: 16),
-                      ElevatedButton(onPressed: () => context.read<WellnessBloc>().add(WellnessMetricsRequested()), child: const Text('Retry'))
-                    ],
-                  ),
-                ));
-                if (state is WellnessLoaded) {
-                  final data = state.data;
-                  return SingleChildScrollView(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        _buildWellnessScore(context, data['score']),
-                        const SizedBox(height: 16),
-                        _buildActionRow(data),
-                        const SizedBox(height: 16),
-                        MoodCheckIn(onMoodSubmit: (mood) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Mood recorded: $mood')));
-                        }),
-                        const SizedBox(height: 16),
-                        _buildWearableGrid(data),
-                        const SizedBox(height: 16),
-                        if (data['insights'] != null) AIInsightsWidget(insights: data['insights']),
-                        const SizedBox(height: 16),
-                        if (data['history'] != null && (data['history'] as List).isNotEmpty) _buildHistoryChart(data['history']),
-                      ],
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              },
+      body: BlocListener<WellnessBloc, WellnessState>(
+        listener: (context, state) {
+          if (state is WellnessLoaded) {
+            _fetchAlerts();
+          }
+        },
+        child: Column(
+          children: [
+            const ConnectivityBanner(),
+            Expanded(
+              child: BlocBuilder<WellnessBloc, WellnessState>(
+                builder: (context, state) {
+                  if (state is WellnessLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (state is WellnessError) {
+                    return Center(child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(LucideIcons.alertCircle, size: 48, color: Colors.red),
+                          const SizedBox(height: 16),
+                          Text(state.message, textAlign: TextAlign.center),
+                          const SizedBox(height: 16),
+                          ElevatedButton(onPressed: () => context.read<WellnessBloc>().add(WellnessMetricsRequested()), child: const Text('Retry'))
+                        ],
+                      ),
+                    ));
+                  }
+                  if (state is WellnessLoaded) {
+                    final data = state.data;
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          _buildWellnessScore(context, data['score']),
+                          const SizedBox(height: 16),
+                          _buildActionRow(data),
+                          const SizedBox(height: 16),
+                          if (_activeAlerts.isNotEmpty) ...[
+                            _buildActiveAlertsList(),
+                            const SizedBox(height: 16),
+                          ],
+                          MoodCheckIn(onMoodSubmit: (mood) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Mood recorded: $mood')));
+                          }),
+                          const SizedBox(height: 16),
+                          _buildWearableGrid(data),
+                          const SizedBox(height: 16),
+                          if (data['insights'] != null) AIInsightsWidget(insights: data['insights']),
+                          const SizedBox(height: 16),
+                          if (data['history'] != null && (data['history'] as List).isNotEmpty) _buildHistoryChart(data['history']),
+                        ],
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -258,7 +290,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       color: const Color(0xFF2563EB),
                       barWidth: 3,
                       dotData: const FlDotData(show: true),
-                      belowBarData: BarAreaData(show: true, color: const Color(0xFF2563EB).withOpacity(0.1)),
+                      belowBarData: BarAreaData(show: true, color: const Color(0xFF2563EB).withValues(alpha: 0.1)),
                     ),
                   ],
                 ),
@@ -267,6 +299,41 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildActiveAlertsList() {
+    return Column(
+      children: _activeAlerts.map((alert) {
+        final isCritical = alert['severity'] == 'critical';
+        final color = isCritical ? Colors.red : Colors.orange;
+        return Card(
+          elevation: 1,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          color: isCritical ? const Color(0xFFFEF2F2) : const Color(0xFFFFF7ED),
+          child: ListTile(
+            leading: Icon(
+              isCritical ? LucideIcons.alertCircle : LucideIcons.alertTriangle,
+              color: color,
+            ),
+            title: Text(
+              'Compliance Alarm: ${alert['rule_triggered']}',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: isCritical ? const Color(0xFF991B1B) : const Color(0xFF9A3412),
+              ),
+            ),
+            subtitle: Text(
+              alert['message'],
+              style: TextStyle(
+                fontSize: 12,
+                color: isCritical ? const Color(0xFF7F1D1D) : const Color(0xFF7C2D12),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }

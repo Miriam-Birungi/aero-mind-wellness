@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'dart:async';
 
 class BreathingExercisePage extends StatefulWidget {
@@ -66,7 +65,7 @@ class _BreathingExercisePageState extends State<BreathingExercisePage> {
               width: _phase == 'Inhale' || _phase == 'Hold' ? 200 : 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.blue.withOpacity(0.3),
+                color: Colors.blue.withValues(alpha: 0.3),
               ),
               child: Center(
                 child: Text('$_counter', style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),

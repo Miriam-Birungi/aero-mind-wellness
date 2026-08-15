@@ -3,12 +3,25 @@ import { useNavigate } from "react-router-dom";
 import {
   Plane,
   Wind,
-  RefreshCw,
+  PlusCircle,
   Watch,
-  Loader2
+  Loader2,
+  Activity,
+  Moon,
+  Footprints
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { WellnessScore } from "@/components/WellnessScore";
 import { WearableData } from "@/components/WearableData";
 import { MoodCheckIn } from "@/components/MoodCheckIn";
@@ -27,7 +40,14 @@ const Index = () => {
   const [breathingOpen, setBreathingOpen] = useState(false);
   const [userName, setUserName] = useState("Pilot");
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [logDialogOpen, setLogDialogOpen] = useState(false);
+
+  // Real metric entry state
+  const [inputHeartRate, setInputHeartRate] = useState("72");
+  const [inputSleep, setInputSleep] = useState("7.5");
+  const [inputSteps, setInputSteps] = useState("6500");
+  const [submittingMetric, setSubmittingMetric] = useState(false);
+
   const { toast } = useToast();
   const {
     isConnected: wearableConnected,
@@ -61,37 +81,59 @@ const Index = () => {
 
     const savedPhoto = localStorage.getItem("aeromind_profile_photo");
     if (savedPhoto) setProfilePhoto(savedPhoto);
-
-    setMounted(true);
   }, [navigate]);
 
-  const refreshData = async () => {
-    // Sync some random but "real" looking data to DB
-    await syncData({
-      heartRate: 60 + Math.floor(Math.random() * 30),
-      sleepHours: 5 + Math.random() * 4,
-      steps: 2000 + Math.floor(Math.random() * 8000)
-    });
+  const handleLogSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const hr = parseFloat(inputHeartRate);
+    const sleep = parseFloat(inputSleep);
+    const steps = parseInt(inputSteps, 10);
 
-    toast({
-      title: "Data Refreshed",
-      description: "Wearable data has been updated from Supabase.",
-    });
+    if (isNaN(hr) || isNaN(sleep) || isNaN(steps)) {
+      toast({
+        title: "Invalid Input",
+        description: "Please enter valid numeric biometric data.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSubmittingMetric(true);
+    try {
+      await syncData({
+        heartRate: hr,
+        sleepHours: sleep,
+        steps: steps,
+      });
+
+      toast({
+        title: "Metrics Logged",
+        description: "Biometric reading successfully stored in Supabase.",
+      });
+      setLogDialogOpen(false);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to record metrics.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmittingMetric(false);
+    }
   };
 
-  const handleMoodSubmit = async (mood: number) => {
-    // For now, mood just triggers a toast, but we could sync it to DB too
+  const handleMoodSubmit = async () => {
     toast({
       title: "Mood Recorded",
       description: "Thank you for checking in.",
     });
   };
 
-  const handleConnectWearable = () => {
-    connectWearable();
+  const handleConnectWearable = async () => {
+    await connectWearable();
     toast({
-      title: "Wearable Connected!",
-      description: "Successfully connected to your smartwatch.",
+      title: "Wearable Device Linked",
+      description: "Successfully configured biometric sensor synchronization.",
     });
   };
 
@@ -99,14 +141,13 @@ const Index = () => {
     return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin" /></div>;
   }
 
-  // Fallback if no metrics yet
   const displayData = metrics || {
     score: 0,
     heartRate: 0,
     sleepHours: 0,
     steps: 0,
     history: [],
-    insights: ["Connect your wearable to see insights."]
+    insights: ["Log your health metrics or link a wearable device to calculate insights."]
   };
 
   return (
@@ -134,9 +175,70 @@ const Index = () => {
                 <Button onClick={() => setBreathingOpen(true)} variant="secondary" className="bg-white/20 hover:bg-white/30 text-white border-white/30">
                   <Wind className="w-4 h-4 mr-2" /> Breathing
                 </Button>
-                <Button onClick={refreshData} variant="secondary" className="bg-white/20 hover:bg-white/30 text-white border-white/30">
-                  <RefreshCw className="w-4 h-4 mr-2" /> Sync
-                </Button>
+
+                <Dialog open={logDialogOpen} onOpenChange={setLogDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="secondary" className="bg-white/20 hover:bg-white/30 text-white border-white/30">
+                      <PlusCircle className="w-4 h-4 mr-2" /> Log Metrics
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Log Biometric Metrics</DialogTitle>
+                      <DialogDescription>
+                        Enter your current physical readings to save to your secure profile.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleLogSubmit} className="space-y-4 py-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="hr-input" className="flex items-center gap-2">
+                          <Activity className="w-4 h-4 text-red-500" /> Heart Rate (bpm)
+                        </Label>
+                        <Input
+                          id="hr-input"
+                          type="number"
+                          value={inputHeartRate}
+                          onChange={(e) => setInputHeartRate(e.target.value)}
+                          placeholder="e.g. 68"
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="sleep-input" className="flex items-center gap-2">
+                          <Moon className="w-4 h-4 text-blue-500" /> Sleep Duration (hours)
+                        </Label>
+                        <Input
+                          id="sleep-input"
+                          type="number"
+                          step="0.1"
+                          value={inputSleep}
+                          onChange={(e) => setInputSleep(e.target.value)}
+                          placeholder="e.g. 7.5"
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="steps-input" className="flex items-center gap-2">
+                          <Footprints className="w-4 h-4 text-green-500" /> Daily Steps
+                        </Label>
+                        <Input
+                          id="steps-input"
+                          type="number"
+                          value={inputSteps}
+                          onChange={(e) => setInputSteps(e.target.value)}
+                          placeholder="e.g. 8000"
+                          required
+                        />
+                      </div>
+
+                      <Button type="submit" className="w-full mt-4" disabled={submittingMetric}>
+                        {submittingMetric ? <Loader2 className="animate-spin mr-2" /> : null} Save Metrics
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
           </div>
@@ -162,10 +264,10 @@ const Index = () => {
                 <div className="bg-primary/20 p-4 rounded-full inline-block"><Watch className="w-12 h-12 text-primary" /></div>
                 <div>
                   <h3 className="text-xl font-semibold mb-2">Connect Your Wearable</h3>
-                  <p className="text-muted-foreground max-w-md mx-auto">Start monitoring your real metrics via Supabase.</p>
+                  <p className="text-muted-foreground max-w-md mx-auto">Start monitoring real metrics via Bluetooth or health sync integrations.</p>
                 </div>
                 {connectingWearable ? <Loader2 className="animate-spin mx-auto" /> : (
-                  <Button onClick={handleConnectWearable} size="lg" className="bg-gradient-primary"><Watch className="w-4 h-4 mr-2" /> Connect</Button>
+                  <Button onClick={handleConnectWearable} size="lg" className="bg-gradient-primary"><Watch className="w-4 h-4 mr-2" /> Connect Wearable</Button>
                 )}
               </div>
             </Card>

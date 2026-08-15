@@ -43,11 +43,22 @@ class WellnessBloc extends Bloc<WellnessEvent, WellnessState> {
       }
 
       final healthData = await healthService.fetchLatestData();
-      await apiService.syncWearableData(
-        heartRate: healthData['heartRate'],
-        sleepHours: healthData['sleepHours'],
-        steps: healthData['steps'],
-      );
+      final connectivityResult = await Connectivity().checkConnectivity();
+      final bool isOffline = connectivityResult.contains(ConnectivityResult.none);
+
+      if (isOffline) {
+        await cacheService.queueOfflineSync({
+          'heartRate': healthData['heartRate'],
+          'sleepHours': healthData['sleepHours'],
+          'steps': healthData['steps'],
+        });
+      } else {
+        await apiService.syncWearableData(
+          heartRate: healthData['heartRate'],
+          sleepHours: healthData['sleepHours'],
+          steps: healthData['steps'],
+        );
+      }
 
       await _fetchAndEmit(emit);
     });
@@ -66,6 +77,19 @@ class WellnessBloc extends Bloc<WellnessEvent, WellnessState> {
           emit(WellnessError('Offline and no cached data available.'));
         }
       } else {
+        // Drain offline sync queue if anything is pending
+        final List<Map<String, dynamic>> queued = await cacheService.getQueuedSyncs();
+        if (queued.isNotEmpty) {
+          for (var item in queued) {
+            await apiService.syncWearableData(
+              heartRate: (item['heartRate'] as num).toInt(),
+              sleepHours: (item['sleepHours'] as num).toDouble(),
+              steps: (item['steps'] as num).toInt(),
+            );
+          }
+          await cacheService.clearOfflineSyncQueue();
+        }
+
         final data = await apiService.getMetrics();
         await cacheService.cacheMetrics(data);
         emit(WellnessLoaded(data));
